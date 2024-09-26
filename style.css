@@ -17,6 +17,8 @@ nav {
   margin-bottom: 50px;
   padding: 30px 0;
   background-color: white;
+  z-index: 10000000;
+  position: relative;
 }
 
 nav > h1 {
@@ -48,6 +50,7 @@ main {
   width: 100%;
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
 }
 
 .countryCards {
@@ -55,6 +58,7 @@ main {
   flex-wrap: wrap;
   gap: 60px;
   justify-content: flex-start;
+
   margin: 0 0 3rem 6rem;
   /* padding: 0 0 0 60px; */
 }
@@ -62,7 +66,7 @@ main {
 .card,
 .card-demo {
   width: 17.5rem;
-  height: 20.9375rem;
+  height: 22.9375rem;
   max-width: 300px;
   background-color: white;
   border-radius: 10px;
@@ -118,6 +122,7 @@ main {
 
 .search {
   margin: 0 0 50px 3.5rem;
+  align-self: flex-start;
 }
 .search > img {
   position: absolute;
@@ -157,7 +162,126 @@ main {
   margin-left: 40px;
   padding-left: 50px;
 }
+.descriptionWindow {
+  width: 100%;
+  height: 100%;
+  background-color: white;
+  position: fixed;
+  z-index: 100000;
+}
+.backBtn {
+  width: 100px;
+  display: flex;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  margin-left: 9.5rem;
+  padding: 12px 15px 10px 15px;
+  border: none;
+  background-color: white;
+  box-shadow: 0 0 20px 0 hsl(0, 0%, 80%);
+  border-radius: 5px;
+  font-weight: 800;
+  cursor: pointer;
+}
 
+.backBtn {
+  stroke: black;
+}
+.details {
+  margin: 5% 0;
+  /* height: 50%; */
+  width: 100%;
+  padding: 0 150px;
+  display: flex;
+  align-items: center;
+  gap: 100px;
+  background-color: hsl(0, 0%, 98%);
+}
+.flagBig {
+  flex-basis: 50%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  background-color: inherit;
+}
+.flagBig img {
+  width: 500px;
+  height: 350px;
+
+  transition: box-shadow ease-in-out 0.2s, scale ease-in-out 0.2s;
+}
+.flagBig img:hover {
+  box-shadow: 0 0 50px 0 hsl(0, 0%, 50%);
+  scale: 1.07;
+}
+.textdetails {
+  flex-basis: 50%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background-color: inherit;
+}
+.textdetails > h1 {
+  background-color: inherit;
+  margin-bottom: 10px;
+}
+.textdetails p,
+.textdetails p > b {
+  margin-top: 10px;
+  background-color: inherit;
+}
+.countryInfo {
+  display: flex;
+  margin-bottom: 30px;
+  background-color: hsl(0, 0%, 98%);
+}
+.right {
+  flex-basis: 50%;
+  background-color: inherit;
+}
+.left {
+  flex-basis: 50%;
+  background-color: inherit;
+  margin-left: 30px;
+}
+.borderCountries {
+  background-color: hsl(0, 0%, 98%);
+  display: flex;
+  align-items: center;
+}
+.borderCountries p {
+  margin-top: 0;
+  font-weight: 800;
+  display: inline-block;
+  margin-right: 15px;
+  background-color: inherit;
+}
+.borders {
+  background-color: inherit;
+  display: inline-block;
+  margin-top: 10px;
+}
+.borderCountries button {
+  padding: 10px 15px;
+  border-radius: 5px;
+  border: none;
+  background-color: inherit;
+  box-shadow: 0 0 20px 0 hsl(0, 0%, 88%);
+  margin-right: 10px;
+  margin-bottom: 15px;
+}
+.mainCardinfo {
+  z-index: 1000;
+  width: 100%;
+  height: 100%;
+  background-color: hsl(0, 0%, 98%);
+  position: fixed;
+  top: 0;
+}
+.mainCardinfo button {
+  margin-top: 100px;
+}
 @keyframes pulse {
   0% {
     opacity: 1;
