@@ -127,7 +127,7 @@ main {
   margin: 0 0 50px 3.5rem;
   align-self: flex-start;
 }
-.search > img {
+.search img {
   position: absolute;
   left: 115px;
   transform: translateY(15px);

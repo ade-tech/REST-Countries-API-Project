@@ -4,6 +4,7 @@ const mainElement = document.querySelector("main");
 const searchDiv = document.querySelector(".search");
 let lastCardCount = 12;
 let targetElement;
+const searchInput = document.querySelector(".searchInput");
 import error from "./Error.png";
 
 // API URL
@@ -25,8 +26,6 @@ const LoadFirstTwelve = async function (url) {
     const response = await fetch(url);
     const result = await response.json();
 
-    console.log(result);
-
     state.all.push(...result);
     state.firstTwelve.push(...result.slice(0, 12));
     state.others.push(...result.slice(12)); // Correct slicing to include from index 12 to end
@@ -35,57 +34,30 @@ const LoadFirstTwelve = async function (url) {
   }
 };
 
-// Render function to insert HTML into the DOM
-function render(data = [], el, markup, position = "afterbegin") {
-  let totalMarkup =
-    Array.isArray(data) && data.length > 0
-      ? data.map(markup).join("")
-      : markup();
-
-  el.insertAdjacentHTML(position, totalMarkup);
-  observeLastCard();
+// Debounce utility function
+function debounce(func, delay) {
+  let timeoutId;
+  return function (...args) {
+    clearTimeout(timeoutId); // Clear any existing timer
+    timeoutId = setTimeout(() => {
+      func.apply(this, args); // Call the original function after delay
+    }, delay);
+  };
 }
 
-// Function to observe the last card for infinite scrolling
-function observeLastCard() {
-  const lastCard = parentElement.querySelector(".card:last-child");
-  if (lastCard) {
-    observer.observe(lastCard);
-  }
+// Function to create no results markup
+function noResultsMarkup() {
+  return `
+    <div class="no-results">
+      <h2>No countries found matching your search.</h2>
+    </div>
+  `;
 }
 
-// Callback for the IntersectionObserver
-function lastcardObserver(entries) {
-  const [entry] = entries;
-  if (entry.isIntersecting) {
-    observer.unobserve(entry.target);
-
-    const nextBatch = state.others.slice(lastCardCount, lastCardCount + 12);
-    render(nextBatch, parentElement, cardMarkup, "beforeend");
-    lastCardCount += 12;
-  }
-}
-
-// Initialize the IntersectionObserver
-const observer = new IntersectionObserver(lastcardObserver, {
-  threshold: 1.0,
-});
-
-// Function to show country details
-function showCountry(e) {
-  const card = e.target.closest(".card");
-  if (!card) return null;
-  const countryName = card.querySelector("h1").textContent;
-  const cardata = state.all.find(
-    (country) => country.name.common === countryName
-  );
-  return cardata ? [cardata] : null;
-}
-
-// Function to create country card markup
+// Function to create country card markup with data attribute for cca3
 function cardMarkup(data) {
   return `
-    <div class="card ${data.cca3.toLowerCase()}">
+    <div class="card" data-cca3="${data.cca3 ? data.cca3.toLowerCase() : ""}">
       <div class="flag" style="background-image: url('${
         data.flags.png
       }'); background-size: cover; background-position: center;"></div>
@@ -164,11 +136,11 @@ function errorMarkup() {
 
 // Function to create loading skeleton markup
 function LoadSkeleton() {
-  const demoCount = Array.from({ length: 12 }, (num) => 1);
+  const demoCount = Array.from({ length: 12 }, () => 1);
 
   return demoCount
     .map(
-      (current) => `
+      () => `
     <div class="card-demo">
       <div class="flag"></div>
       <div class="text">
@@ -184,15 +156,104 @@ function LoadSkeleton() {
     .join("");
 }
 
+function renderSkeletonCode(data = [], el, markup, position = "afterbegin") {
+  let totalMarkup =
+    Array.isArray(data) && data.length > 0
+      ? data.map(markup).join("")
+      : markup();
+
+  el.insertAdjacentHTML(position, totalMarkup);
+}
+// Render function to insert HTML into the DOM
+function render(
+  data = [],
+  el,
+  markup,
+  emptyMarkup = null,
+  position = "afterbegin"
+) {
+  let totalMarkup;
+
+  if (Array.isArray(data) && data.length > 0) {
+    totalMarkup = data.map(markup).join("");
+  } else if (emptyMarkup) {
+    totalMarkup = emptyMarkup();
+  } else {
+    totalMarkup = "";
+  }
+
+  el.insertAdjacentHTML(position, totalMarkup);
+
+  if (data.length > 0) {
+    observeLastCard();
+  }
+}
+
+// Function to observe the last card for infinite scrolling
+function observeLastCard() {
+  const lastCard = parentElement.querySelector(".card:last-child");
+  if (lastCard) {
+    observer.observe(lastCard);
+  }
+}
+
+// Callback for the IntersectionObserver
+function lastcardObserver(entries) {
+  const [entry] = entries;
+  if (entry.isIntersecting) {
+    observer.unobserve(entry.target);
+
+    const nextBatch = state.others.slice(lastCardCount, lastCardCount + 12);
+    render(nextBatch, parentElement, cardMarkup, null, "beforeend");
+    lastCardCount += 12;
+  }
+}
+
+// Initialize the IntersectionObserver
+const observer = new IntersectionObserver(lastcardObserver, {
+  threshold: 1.0,
+});
+
+// Function to show country details
+function showCountry(e) {
+  const card = e.target.closest(".card");
+  if (!card) return null;
+
+  const countryCode = card.getAttribute("data-cca3");
+  const cardata = state.all.find(
+    (country) => country.cca3.toLowerCase() === countryCode
+  );
+
+  console.log(cardata);
+  return cardata ? [cardata] : null;
+}
+
 // Function to handle back button click globally using event delegation
 document.addEventListener("click", (e) => {
   if (e.target.closest(".backBtn")) {
-    let newParent = document.createElement("div").classList.add("countryCards");
-    mainElement.append(newParent);
+    // Clear the current content
+    clear(parentElement);
+
+    // Render the initial first twelve countries
+    render(state.firstTwelve, parentElement, cardMarkup, null);
+
+    // Reset card count
+    lastCardCount = 12;
+
+    // Re-observe the last card for infinite scrolling
+    observer.disconnect();
+    observeLastCard();
+
+    // Toggle search visibility if necessary
     searchDiv.classList.toggle("hidden");
-    render(state.all, parentElement, cardMarkup);
-    console.log(targetElement);
-    targetElement.scrollIntoView();
+
+    // Reset the search input
+    searchInput.value = "";
+
+    // Scroll back to the initial position
+    if (targetElement) {
+      targetElement.scrollIntoView();
+    }
   }
 });
 
@@ -205,10 +266,50 @@ document.addEventListener("click", (e) => {
     );
     if (borderCountry) {
       clear(parentElement);
-      render([borderCountry], parentElement, countryDetailsMarkup);
+      render([borderCountry], parentElement, countryDetailsMarkup, null);
     }
   }
 });
+
+// Function to handle the search input
+function handleSearchInput(e) {
+  const searchVariable = e.target.value.toLowerCase().trim();
+
+  if (searchVariable === "") {
+    // If search is empty, show the initial first twelve countries
+    clear(parentElement);
+    render(state.firstTwelve, parentElement, cardMarkup, null);
+    lastCardCount = 12; // Reset the card count
+    observer.disconnect(); // Disconnect observer to prevent duplicates
+    observeLastCard(); // Re-observe the last card for infinite scrolling
+    return;
+  }
+
+  // Filter the countries based on the search term using 'includes'
+  const filteredCountries = state.all.filter(
+    (country) => country.name.common.toLowerCase().includes(searchVariable) // Changed to 'includes'
+  );
+
+  // Clear the parent element
+  clear(parentElement);
+
+  if (filteredCountries.length > 0) {
+    // Render the filtered countries
+    render(filteredCountries, parentElement, cardMarkup, null);
+  } else {
+    // Render the no results message
+    render([], parentElement, cardMarkup, noResultsMarkup);
+  }
+
+  // Disconnect the observer to prevent infinite scrolling during search
+  observer.disconnect();
+}
+
+// Create a debounced version of the search handler with a 300ms delay
+const debouncedSearchInput = debounce(handleSearchInput, 300);
+
+// Attach the debounced function to the input event
+searchInput.addEventListener("input", debouncedSearchInput);
 
 // Event listener for country card clicks using event delegation
 parentElement.addEventListener("click", (e) => {
@@ -219,30 +320,28 @@ parentElement.addEventListener("click", (e) => {
 
   clear(parentElement);
   targetElement = card;
-  console.log(targetElement, card);
   searchDiv.classList.toggle("hidden");
-  render([country], parentElement, countryDetailsMarkup);
+  render([country], parentElement, countryDetailsMarkup, null);
 });
 
-// Initialize the application
 async function init() {
   try {
     clear(parentElement);
-    render([], parentElement, LoadSkeleton);
+    renderSkeletonCode([], parentElement, LoadSkeleton);
 
     await LoadFirstTwelve(API_URL);
     clear(parentElement);
-    render(state.firstTwelve, parentElement, cardMarkup);
+    render(state.firstTwelve, parentElement, cardMarkup, null);
   } catch (err) {
     clear(parentElement);
-    render([], parentElement, errorMarkup);
+    renderSkeletonCode([], parentElement, errorMarkup);
 
     const tryAgain = document.querySelector(".try-again");
 
     if (tryAgain) {
       tryAgain.addEventListener("click", () => {
         clear(parentElement);
-        render([], parentElement, LoadSkeleton);
+        render([], parentElement, LoadSkeleton, null);
         clear(parentElement);
 
         init();
@@ -251,5 +350,4 @@ async function init() {
   }
 }
 
-// Start the application
 init();
