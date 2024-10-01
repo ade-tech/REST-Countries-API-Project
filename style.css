@@ -8,6 +8,7 @@
 }
 .hidden {
   display: none;
+  visibility: hidden;
 }
 
 nav {
@@ -123,9 +124,8 @@ main {
   margin-top: 10px;
 }
 
-.search {
-  margin: 0 0 50px 3.5rem;
-  align-self: flex-start;
+.search-side {
+  flex-basis: 50%;
 }
 .search img {
   position: absolute;
@@ -153,6 +153,14 @@ main {
   font-size: 24px;
   cursor: pointer;
 }
+.search {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+  margin: 0 0 50px 0;
+  align-self: flex-start;
+}
 
 .search input {
   background-color: white;
@@ -162,8 +170,39 @@ main {
   outline: none;
   box-shadow: 0 0 12px 0 lightgray;
   border-radius: 5px;
-  margin-left: 40px;
+  margin-left: 100px;
   padding-left: 50px;
+}
+
+.default {
+  width: 290px;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  height: 50px;
+  box-shadow: 0 0 12px 0 lightgray;
+  margin-right: 150px;
+  border-radius: 5px;
+  font-weight: 500;
+  padding-left: 20px;
+  color: hsl(0, 0%, 30%);
+}
+
+.others {
+  position: absolute;
+  width: 290px;
+  height: 250px;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+  box-shadow: 0 0 12px 0 lightgray;
+  border-radius: 5px;
+}
+.others > div {
+  border-radius: 5px;
+  background-color: inherit;
+  padding: 10px 0 10px 20px;
 }
 .descriptionWindow {
   width: 100%;

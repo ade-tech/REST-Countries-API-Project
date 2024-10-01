@@ -4,6 +4,8 @@ const mainElement = document.querySelector("main");
 const searchDiv = document.querySelector(".search");
 let lastCardCount = 12;
 let targetElement;
+const defaultelement = document.querySelector(".default");
+const others = document.querySelector(".others");
 const searchInput = document.querySelector(".searchInput");
 import error from "./Error.png";
 
@@ -74,8 +76,12 @@ function cardMarkup(data) {
 // Function to create country details markup
 function countryDetailsMarkup(data) {
   if (!data) return "";
+  const nativeName = Object.values(data.name.nativeName)
+    .map((value) => Object.values(value))
+    .flat();
+
   return `
-    <button class="backBtn">
+ <button class="backBtn">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 30" width="20px" stroke-width="2px">
         <path d="M21.5,11.5H3.642l6.306-6.832c.188-.203,.175-.52-.028-.707-.203-.188-.52-.174-.707,.028L2.133,11.661c-.177,.192-.177,.487,0,.679l7.081,7.671c.098,.106,.232,.161,.367,.161,.122,0,.243-.044,.339-.133,.203-.187,.215-.503,.028-.707L3.642,12.5H21.5c.276,0,.5-.224,.5-.5s-.224-.5-.5-.5Z"/>
       </svg>
@@ -89,8 +95,8 @@ function countryDetailsMarkup(data) {
         <h1>${data.name.common}</h1>
         <div class="countryInfo">
           <div class="right">
-            <p><b>Native Name</b>: ${Object.values(data.name.nativeName)
-              .map((value) => Object.values(value)[0].common)
+            <p><b>Native Name</b>:${nativeName
+              .filter((countryName, i) => (i < 2 ? countryName : null))
               .join(", ")}</p>
             <p><b>Region</b>: ${data.region}</p>
             <p><b>Population</b>: ${Number(
@@ -122,7 +128,9 @@ function countryDetailsMarkup(data) {
     </div>
   `;
 }
-
+defaultelement.addEventListener("click", (e) => {
+  others.classList.toggle("hidden");
+});
 // Function to create error markup
 function errorMarkup() {
   return `
@@ -224,7 +232,6 @@ function showCountry(e) {
     (country) => country.cca3.toLowerCase() === countryCode
   );
 
-  console.log(cardata);
   return cardata ? [cardata] : null;
 }
 
