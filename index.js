@@ -7,6 +7,14 @@ let targetElement;
 const defaultelement = document.querySelector(".default");
 const others = document.querySelector(".others");
 const searchInput = document.querySelector(".searchInput");
+const togglemodeButton = document.querySelector(".button");
+
+togglemodeButton.addEventListener("click", (e) => {
+  const clicked = e.target.closest(".button");
+  document.body.dataset.theme =
+    document.body.dataset.theme === "light" ? "dark" : "light";
+});
+
 // const regions = document.querySelectorAll(".option");
 import error from "./Error.png";
 
