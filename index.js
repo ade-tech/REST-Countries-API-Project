@@ -7,10 +7,18 @@ let targetElement;
 const defaultelement = document.querySelector(".default");
 const others = document.querySelector(".others");
 const searchInput = document.querySelector(".searchInput");
+// const regions = document.querySelectorAll(".option");
 import error from "./Error.png";
 
 // API URL
 const API_URL = "https://restcountries.com/v3.1/all";
+const timeoutFunction = function () {
+  return new Promise((_, reject) => {
+    setTimeout(() => {
+      reject("This Request took too long");
+    }, 10000);
+  });
+};
 
 // State to manage data
 const state = {
@@ -25,7 +33,7 @@ const clear = (el) => (el.innerHTML = "");
 // Load the first twelve countries from the API
 const LoadFirstTwelve = async function (url) {
   try {
-    const response = await fetch(url);
+    const response = await Promise.race([fetch(url), timeoutFunction()]);
     const result = await response.json();
 
     state.all.push(...result);
@@ -128,7 +136,7 @@ function countryDetailsMarkup(data) {
     </div>
   `;
 }
-defaultelement.addEventListener("click", (e) => {
+defaultelement.addEventListener("click", () => {
   others.classList.toggle("hidden");
 });
 // Function to create error markup
@@ -205,6 +213,18 @@ function observeLastCard() {
   }
 }
 
+others.addEventListener("click", (e) => {
+  const region = e.target.closest("div");
+  const regionValue = region.dataset.region;
+  clear(parentElement);
+  render(
+    state.all.filter((country) => country.region === regionValue),
+    parentElement,
+    cardMarkup
+  );
+  observer.disconnect();
+  others.classList.toggle("hidden");
+});
 // Callback for the IntersectionObserver
 function lastcardObserver(entries) {
   const [entry] = entries;
@@ -324,6 +344,7 @@ parentElement.addEventListener("click", (e) => {
   const card = e.target.closest(".card");
   if (!data) return;
   const country = data[0];
+  console.log(state.all);
 
   clear(parentElement);
   targetElement = card;
